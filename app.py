@@ -117,12 +117,25 @@ def generate_config(best_domain, private_key, short_id):
         },
         "routing": {
             "rules": [
+                {
+                    "ip": [
+                    "geoip:private"
+                    ],
+                    "outboundTag": "BLOCK",
+                    "type": "field"
+                }
+            ]
+        },
+        "inbounds": [
             {
-                "ip": [
-                "geoip:private"
-                ],
-                "outboundTag": "BLOCK",
-                "type": "field"
+                "tag": "Shadowsocks TCP",
+                "listen": "0.0.0.0",
+                "port": 1080,
+                "protocol": "shadowsocks",
+                "settings": {
+                    "clients": [],
+                    "network": "tcp,udp"
+                }
             },{
                 "tag": "VLESS + TCP + REALITY",
                 "listen": "0.0.0.0",
@@ -154,42 +167,26 @@ def generate_config(best_domain, private_key, short_id):
                     "destOverride": ["http", "tls"]
                 }
             }
-            ]
-        },
-        "inbounds": [
-            {
-                "tag": "Shadowsocks TCP",
-                "listen": "0.0.0.0",
-                "port": 1080,
-                "protocol": "shadowsocks",
-                "settings": {
-                    "clients": [],
-                    "network": "tcp,udp"
-                }
-            }
         ],
         "outbounds": [
             {
-                "protocol": "freedom",
-                "tag": "DIRECT"
-            },
-            {
                 "protocol": "blackhole",
                 "tag": "BLOCK"
-            },{
-            "outboundTag": "DIRECT",
-            "domain": [
-                "full:cp.cloudflare.com",
-                "domain:msftconnecttest.com",
-                "domain:msftncsi.com",
-                "domain:connectivitycheck.gstatic.com",
-                "domain:captive.apple.com",
-                "full:detectportal.firefox.com",
-                "domain:networkcheck.kde.org",
-                "full:*.gstatic.com"
-            ],
-            "type": "field"
             },
+            {
+                "outboundTag": "DIRECT",
+                "domain": [
+                    "full:cp.cloudflare.com",
+                    "domain:msftconnecttest.com",
+                    "domain:msftncsi.com",
+                    "domain:connectivitycheck.gstatic.com",
+                    "domain:captive.apple.com",
+                    "full:detectportal.firefox.com",
+                    "domain:networkcheck.kde.org",
+                    "full:*.gstatic.com"
+                ],
+                "type": "field"
+            }
         ]
     }
     return config
