@@ -112,35 +112,85 @@ def generate_config(best_domain, private_key, short_id):
     # Выбираем случайный порт из непопулярных (например, диапазон 30000-40000)
     port = random.randint(30000, 40000)
     config = {
-        "tag": "VLESS + TCP + REALITY",
-        "listen": "0.0.0.0",
-        "port": port,
-        "protocol": "vless",
-        "settings": {
-            "clients": [],
-            "decryption": "none"
+        "log": {
+            "loglevel": "warning"
         },
-        "streamSettings": {
-            "network": "tcp",
-            "tcpSettings": {},
-            "security": "reality",
-            "realitySettings": {
-                "show": False,
-                "dest": f"{best_domain}:443" if best_domain else "Ошибка: домен не найден",
-                "xver": 0,
-                "serverNames": [
-                    best_domain if best_domain else "Ошибка: домен не найден"
+        "routing": {
+            "rules": [
+            {
+                "ip": [
+                "geoip:private"
                 ],
-                "privateKey": private_key if private_key else "Ошибка: privateKey не найден",
-                "shortIds": [
-                    short_id if short_id else "Ошибка: shortIds не найден"
-                ]
+                "outboundTag": "BLOCK",
+                "type": "field"
+            },{
+                "tag": "VLESS + TCP + REALITY",
+                "listen": "0.0.0.0",
+                "port": port,
+                "protocol": "vless",
+                "settings": {
+                    "clients": [],
+                    "decryption": "none"
+                },
+                "streamSettings": {
+                    "network": "tcp",
+                    "tcpSettings": {},
+                    "security": "reality",
+                    "realitySettings": {
+                        "show": False,
+                        "dest": f"{best_domain}:443" if best_domain else "Ошибка: домен не найден",
+                        "xver": 0,
+                        "serverNames": [
+                            best_domain if best_domain else "Ошибка: домен не найден"
+                        ],
+                        "privateKey": private_key if private_key else "Ошибка: privateKey не найден",
+                        "shortIds": [
+                            short_id if short_id else "Ошибка: shortIds не найден"
+                        ]
+                    }
+                },
+                "sniffing": {
+                    "enabled": True,
+                    "destOverride": ["http", "tls"]
+                }
             }
+            ]
         },
-        "sniffing": {
-            "enabled": True,
-            "destOverride": ["http", "tls"]
-        }
+        "inbounds": [
+            {
+                "tag": "Shadowsocks TCP",
+                "listen": "0.0.0.0",
+                "port": 1080,
+                "protocol": "shadowsocks",
+                "settings": {
+                    "clients": [],
+                    "network": "tcp,udp"
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "protocol": "freedom",
+                "tag": "DIRECT"
+            },
+            {
+                "protocol": "blackhole",
+                "tag": "BLOCK"
+            },{
+            "outboundTag": "DIRECT",
+            "domain": [
+                "full:cp.cloudflare.com",
+                "domain:msftconnecttest.com",
+                "domain:msftncsi.com",
+                "domain:connectivitycheck.gstatic.com",
+                "domain:captive.apple.com",
+                "full:detectportal.firefox.com",
+                "domain:networkcheck.kde.org",
+                "full:*.gstatic.com"
+            ],
+            "type": "field"
+            },
+        ]
     }
     return config
 
