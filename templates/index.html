@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Обработка IP адреса</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            padding-top: 20px;
+        }
+        #preloader, #result {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #preloader p {
+            font-size: 18px;
+        }
+        #result pre {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: left;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        /* Простая анимация загрузчика */
+        .loader {
+            border: 8px solid #1e1e1e;
+            border-top: 8px solid #ffffff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Адаптивный дизайн */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+            #preloader p, #result pre {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Обработка IP: {{ ip_address }}</h1>
+    <div id="preloader">
+        <div class="loader"></div>
+        <p>Загрузка... Пожалуйста, подождите.</p>
+    </div>
+    <div id="result" style="display: none;">
+        <pre id="result-json"></pre>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var preloader = document.getElementById('preloader');
+            var resultDiv = document.getElementById('result');
+            var resultJson = document.getElementById('result-json');
+            var ip_address = "{{ ip_address }}";
+            
+            // Отправляем AJAX-запрос
+            fetch('/api/process_ip?ip=' + encodeURIComponent(ip_address))
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Сетевая ошибка');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    // Скрываем прелоадер
+                    preloader.style.display = 'none';
+                    // Показываем результат
+                    resultDiv.style.display = 'block';
+                    if (data.error) {
+                        resultJson.textContent = 'Ошибка: ' + data.error;
+                    } else {
+                        resultJson.textContent = JSON.stringify(data, null, 2);
+                    }
+                })
+                .catch(function(error) {
+                    preloader.style.display = 'none';
+                    resultDiv.style.display = 'block';
+                    resultJson.textContent = 'Ошибка: ' + error.message;
+                });
+        });
+    </script>
+</body>
+</html>
